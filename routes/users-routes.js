@@ -28,6 +28,7 @@ router.post(
       .not()
       .matches(/\s/)
       .withMessage("Password must not contain whitespace"),
+    check("image").not().isEmpty().withMessage("Select Image"),
   ],
   usersController.signup
 );

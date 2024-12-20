@@ -2,10 +2,13 @@ const express = require("express");
 const favouritesControllers = require("../controllers/favourites-controller");
 const router = express.Router();
 const { check } = require("express-validator");
+const checkAuth = require("../middleware/check-auth");
 
-router.get("/:pid", favouritesControllers.getBookById);
-router.get("/books/:uid", favouritesControllers.getBookByUserID);
-router.get("/", favouritesControllers.getAllBooks);
+router.use(checkAuth);
+
+router.get("/:pid", favouritesControllers.getFavouriteById);
+router.get("/user/:uid", favouritesControllers.getFavouritesByUserID);
+router.get("/", favouritesControllers.getAllFavourites);
 router.post(
   "/",
   [
@@ -16,9 +19,9 @@ router.post(
     check("url").notEmpty().withMessage("url is required"),
     check("user").notEmpty().withMessage("user is required"),
   ],
-  favouritesControllers.createBook
+  favouritesControllers.createFavourite
 );
-router.patch("/:pid", favouritesControllers.updateBook);
-router.delete("/:pid", favouritesControllers.deleteBook);
+router.patch("/:pid", favouritesControllers.updateFavourite);
+router.delete("/:pid", favouritesControllers.deleteFavourite);
 
 module.exports = router;

@@ -2,66 +2,58 @@ const uuid = require("uuid/v4");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
-const Book = require("../models/book");
+const Favourite = require("../models/favourite");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 
-let Favourites = [];
-
-const getBookById = async(req, res, next) => {
+const getFavouriteById = async (req, res, next) => {
   const bookId = req.params.pid;
 
   let book;
-  try{
-    book = await Book.findById(bookId);
-  }catch(error){
-    return next(
-      new HttpError("Error while fetching Book", 500)
-    );
+  try {
+    book = await Favourite.findById(bookId);
+  } catch (error) {
+    return next(new HttpError("Error while fetching Favourite", 500));
   }
   res.json({ book });
 };
 
-const getAllBooks = async(req, res, next) => {
+const getAllFavourites = async (req, res, next) => {
   let books;
-  try{
-    books = await Book.find();
-  }catch(error){
-    return next(
-      new HttpError("Error while fetching Favourites", 402)
-    );
+  try {
+    books = await Favourite.find();
+  } catch (error) {
+    return next(new HttpError("Error while fetching Favourites", 402));
   }
   res.json({ books });
 };
 
-const getBookByUserID = async(req, res, next) => {
+const getFavouritesByUserID = async (req, res, next) => {
   const userId = req.params.uid;
 
-  let userBooks;
+  let userFavourites;
   try {
-    userBooks = await User.findById(userId).populate('books');
+    userFavourites = await User.findById(userId).populate("favourites").exec();
   } catch (err) {
     const error = new HttpError(
-      'Fetching BOOKS failed, please try again later',
+      "Fetching favourites failed, please try again later",
       500
     );
     return next(error);
   }
 
-  if (!userBooks) {
+  if (!userFavourites) {
     return next(
-      new HttpError('Could not find books for the provided user id.', 404)
+      new HttpError("Could not find books for the provided user id.", 404)
     );
   }
 
   res.json({
-    places: userBooks.books.map(place =>
-      place.toObject({ getters: true })
-    )
+    favourites: userFavourites.favourites,
   });
-}
+};
 
-const createBook = async (req, res, next) => {
+const createFavourite = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -73,7 +65,7 @@ const createBook = async (req, res, next) => {
 
   let existingUser;
   try {
-    existingUser = await User.findById(user); 
+    existingUser = await User.findById(user);
     console.log("Fetched User:", existingUser);
     if (!existingUser) {
       return next(new HttpError("User not found", 404));
@@ -83,7 +75,7 @@ const createBook = async (req, res, next) => {
     return next(new HttpError("Error while fetching user", 500));
   }
 
-  const createdBook = new Book({
+  const createdFavourite = new Favourite({
     book_id,
     title,
     subtitle,
@@ -96,8 +88,8 @@ const createBook = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await createdBook.save({ session: sess });
-    existingUser.books.push(createdBook);
+    await createdFavourite.save({ session: sess });
+    existingUser.favourites.push(createdFavourite);
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
@@ -106,29 +98,31 @@ const createBook = async (req, res, next) => {
   }
 
   res.status(201).json({
-    book: createdBook,
+    book: createdFavourite,
     message: "Added book to Favourites",
   });
 };
 
-
-
-const updateBook = async (req, res, next) => {
+const updateFavourite = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(new HttpError("Invalid inputs passed, please check your data.", 422));
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
   }
 
   const bookId = req.params.pid;
 
   let book;
   try {
-    book = await Book.findById(bookId);
+    book = await Favourite.findById(bookId);
     if (!book) {
-      return next(new HttpError("Could not find book for the provided id.", 404));
+      return next(
+        new HttpError("Could not find book for the provided id.", 404)
+      );
     }
   } catch (error) {
-    return next(new HttpError("Error while fetching Book", 500));
+    return next(new HttpError("Error while fetching Favourite", 500));
   }
 
   const data = req.body;
@@ -140,23 +134,22 @@ const updateBook = async (req, res, next) => {
   try {
     await book.save();
   } catch (error) {
-    console.error('Error while saving updated book:', error);
-    return next(new HttpError('Unable to update book', 500));
+    console.error("Error while saving updated book:", error);
+    return next(new HttpError("Unable to update book", 500));
   }
 
   res.status(200).json({ book, message: "Updated book successfully" });
 };
 
-
-const deleteBook = async(req, res, next) => {
+const deleteFavourite = async (req, res, next) => {
   const bookId = req.params.pid;
 
   let book;
   try {
-    book = await Book.findById(bookId).populate('user'); //populate method allows us access a user document that we need to overwrite or change due to change in related document.
+    book = await Favourite.findById(bookId).populate("user"); //populate method allows us access a user document that we need to overwrite or change due to change in related document.
     //here when we delete book we also need to modify books array in user hence use populate. To use populate we need to connect 2 collections which we did using key word ref.
   } catch (error) {
-    return next(new HttpError("Error while fetching Book", 500));
+    return next(new HttpError("Error while fetching Favourite", 500));
   }
 
   if (!book) {
@@ -167,20 +160,20 @@ const deleteBook = async(req, res, next) => {
     const sess = await mongoose.startSession();
     sess.startTransaction();
     await book.deleteOne({ session: sess });
-    book.user.books.pull(book);
+    book.user.favourites.pull(book);
     await book.user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    console.error('Error while saving deleting book:', error);
-    return next(new HttpError('Unable to delete book', 500));
+    console.error("Error while saving deleting book:", error);
+    return next(new HttpError("Unable to delete book", 500));
   }
 
   res.status(200).json({ book, message: "Deleted book successfully" });
 };
 
-exports.getBookById = getBookById;
-exports.createBook = createBook;
-exports.updateBook = updateBook;
-exports.deleteBook = deleteBook;
-exports.getAllBooks = getAllBooks;
-exports.getBookByUserID = getBookByUserID;
+exports.getFavouriteById = getFavouriteById;
+exports.createFavourite = createFavourite;
+exports.updateFavourite = updateFavourite;
+exports.deleteFavourite = deleteFavourite;
+exports.getAllFavourites = getAllFavourites;
+exports.getFavouritesByUserID = getFavouritesByUserID;
