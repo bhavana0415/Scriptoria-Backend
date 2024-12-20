@@ -120,7 +120,7 @@ const updateBook = async (req, res, next) => {
     return next(new HttpError("Error while fetching Book", 500));
   }
 
-  if (book.user.toString() !== req.userData.userId) {
+  if (book.user._id.toString() !== req.userData.userId) {
     const error = new HttpError("You are not allowed to edit this book.", 401);
     return next(error);
   }
@@ -156,7 +156,7 @@ const deleteBook = async (req, res, next) => {
     return next(new HttpError("Could not find book for the provided id.", 404));
   }
 
-  if (book.user.toString() !== req.userData.userId) {
+  if (book.user.id.toString() !== req.userData.userId) {
     const error = new HttpError(
       "You are not allowed to delete this book.",
       401
