@@ -154,6 +154,14 @@ const deleteRecent = async (req, res, next) => {
     return next(new HttpError("Could not find book for the provided id.", 404));
   }
 
+  if (book.user.toString() !== req.userData.userId) {
+    const error = new HttpError(
+      "You are not allowed to delete this book.",
+      401
+    );
+    return next(error);
+  }
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
