@@ -1,4 +1,3 @@
-const uuid = require("uuid/v4");
 const { validationResult } = require("express-validator");
 
 const HttpError = require("../models/http-error");
@@ -56,9 +55,8 @@ const getBooksByUserID = async (req, res, next) => {
 const createBook = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
-    );
+    const errorMessages = errors.array().map((error) => error.msg);
+    return next(new HttpError(errorMessages.join(", "), 422));
   }
 
   const { data, user } = req.body;
@@ -101,9 +99,8 @@ const createBook = async (req, res, next) => {
 const updateBook = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
-    );
+    const errorMessages = errors.array().map((error) => error.msg);
+    return next(new HttpError(errorMessages.join(", "), 422));
   }
 
   const bookId = req.params.pid;

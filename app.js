@@ -4,6 +4,7 @@ require("dotenv").config();
 const port = process.env.PORT;
 const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 const favouritesRoutes = require("./routes/favourites-routes");
 const recentsRoutes = require("./routes/recents-routes");
@@ -12,6 +13,7 @@ const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
+app.use(cors());
 // app.use(bodyParser.json());
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
@@ -52,3 +54,5 @@ mongoose
   .catch((err) => {
     console.log("error connecting to mongo");
   });
+
+module.exports = app;

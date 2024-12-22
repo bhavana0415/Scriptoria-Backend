@@ -46,17 +46,18 @@ const getRecentsByUserID = async (req, res, next) => {
     );
   }
 
+  const reversedRecents = userRecents.recents.reverse();
+
   res.json({
-    recents: userRecents.recents,
+    recents: reversedRecents,
   });
 };
 
 const createRecent = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
-    );
+    const errorMessages = errors.array().map((error) => error.msg);
+    return next(new HttpError(errorMessages.join(", "), 422));
   }
 
   const { book_id, title, subtitle, authors, image, url, user } = req.body;
@@ -104,9 +105,8 @@ const createRecent = async (req, res, next) => {
 const updateRecent = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data.", 422)
-    );
+    const errorMessages = errors.array().map((error) => error.msg);
+    return next(new HttpError(errorMessages.join(", "), 422));
   }
 
   const bookId = req.params.pid;
