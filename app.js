@@ -1,9 +1,9 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+// const bodyParser = require("body-parser");
 require("dotenv").config();
-const port = process.env.PORT;
-const host = process.env.HOST;
-const localhost = process.env.LOCALHOST;
+// const port = process.env.PORT;
+// const host = process.env.HOST;
+// const localhost = process.env.LOCALHOST;
 const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -15,12 +15,17 @@ const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
+// app.use(
+//   cors({
+//     origin: [host, localhost],
+//     methods: "GET,POST,PATCH,DELETE",
+//     allowedHeaders:
+//       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+//   })
+// );
 app.use(
   cors({
-    origin: [host, localhost],
-    methods: "GET,POST,PATCH,DELETE",
-    allowedHeaders:
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    origin: "*",
   })
 );
 
@@ -76,12 +81,21 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
+// mongoose
+//   .connect(dbConnection)
+//   .then(() => {
+//     app.listen(port, () => {
+//       console.log(`Server is running on port ${port}`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.log("Error connecting to MongoDB:", err);
+//   });
+
 mongoose
   .connect(dbConnection)
   .then(() => {
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
+    console.log("Connected to MongoDB");
   })
   .catch((err) => {
     console.log("Error connecting to MongoDB:", err);
