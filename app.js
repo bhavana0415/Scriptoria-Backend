@@ -2,6 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 const port = process.env.PORT;
+const host = process.env.HOST;
+const localhost = process.env.LOCALHOST;
 const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -13,7 +15,10 @@ const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin:  }));
+app.use(cors({
+  origin: [host, localhost],
+}));
 // app.use(bodyParser.json());
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
