@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js"
@@ -20,7 +20,7 @@
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.46",
     "mongoose": "^8.9.1",
-    "mongoose-unique-validator": "^4.0.1",
+    "mongoose-unique-validator": "^5.0.1",
     "uuid": "^3.3.3"
   },
   "devDependencies": {

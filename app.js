@@ -1,9 +1,8 @@
 const express = require("express");
 // const bodyParser = require("body-parser");
 require("dotenv").config();
-// const port = process.env.PORT;
-// const host = process.env.HOST;
-// const localhost = process.env.LOCALHOST;
+const host = process.env.HOST;
+const localhost = process.env.LOCALHOST;
 const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -15,19 +14,20 @@ const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
-// app.use(
-//   cors({
-//     origin: [host, localhost],
-//     methods: "GET,POST,PATCH,DELETE",
-//     allowedHeaders:
-//       "Origin, X-Requested-With, Content-Type, Accept, Authorization",
-//   })
-// );
+
 app.use(
   cors({
-    origin: "*",
+    origin: [host, localhost],
+    methods: "GET,POST,PATCH,DELETE",
+    allowedHeaders:
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   })
 );
+// app.use(
+//   cors({
+//     origin: "*",
+//   })
+// );
 
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
@@ -81,11 +81,12 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!" });
 });
 
+// for local server
 // mongoose
 //   .connect(dbConnection)
 //   .then(() => {
-//     app.listen(port, () => {
-//       console.log(`Server is running on port ${port}`);
+//     app.listen(5000, () => {
+//       console.log(`Server is running on 5000 ${port}`);
 //     });
 //   })
 //   .catch((err) => {
