@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.HOST.trim(),
+    origin: "https://scriptoria-mern.netlify.app",
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: [
       "Origin",
@@ -23,8 +23,6 @@ app.use(
     ],
   })
 );
-
-console.log("CORS allowed origin:", process.env.HOST);
 
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
@@ -55,7 +53,6 @@ app.get("/", (req, res) => {
         <h1>Welcome to the Scriptoria Backend</h1>
         <p>Your backend is running successfully!</p>
         <p>Use API endpoints like <code>/api/users/signup</code> to interact with the backend.</p>
-        <p>${process.env.HOST === "https://scriptoria-mern.netlify.app"}</p>
       </body>
     </html>
   `);
