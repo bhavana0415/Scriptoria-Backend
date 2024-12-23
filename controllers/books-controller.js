@@ -5,28 +5,7 @@ const Book = require("../models/book");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 
-const getBookById = async (req, res, next) => {
-  const bookId = req.params.pid;
-
-  let book;
-  try {
-    book = await Book.findById(bookId);
-  } catch (error) {
-    return next(new HttpError("Error while fetching Book", 500));
-  }
-  res.json({ book });
-};
-
-const getAllBooks = async (req, res, next) => {
-  let books;
-  try {
-    books = await Book.find();
-  } catch (error) {
-    return next(new HttpError("Error while fetching Favourites", 402));
-  }
-  res.json({ books });
-};
-
+//used in frontend app
 const getBooksByUserID = async (req, res, next) => {
   const userId = req.params.uid;
 
@@ -34,17 +13,11 @@ const getBooksByUserID = async (req, res, next) => {
   try {
     userBooks = await User.findById(userId).populate("books").exec();
   } catch (err) {
-    const error = new HttpError(
-      "Fetching BOOKS failed, please try again later",
-      500
-    );
-    return next(error);
+    return next(new HttpError(err));
   }
 
   if (!userBooks) {
-    return next(
-      new HttpError("Could not find books for the provided user id.", 404)
-    );
+    return next(new HttpError("Could not find books for the given user.", 404));
   }
 
   res.json({
@@ -66,11 +39,10 @@ const createBook = async (req, res, next) => {
     existingUser = await User.findById(user);
     console.log("Fetched User:", existingUser);
     if (!existingUser) {
-      return next(new HttpError("User not found", 404));
+      return next(new HttpError("User not found.", 404));
     }
   } catch (error) {
-    console.error("Error while fetching user:", error);
-    return next(new HttpError("Error while fetching user", 500));
+    return next(new HttpError(error));
   }
 
   const createdBook = new Book({
@@ -86,13 +58,12 @@ const createBook = async (req, res, next) => {
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    console.error("Error while saving book:", error);
-    return next(new HttpError("Unable to add book to Favourites", 500));
+    return next(new HttpError(error));
   }
 
   res.status(201).json({
     book: createdBook,
-    message: "Added book to Favourites",
+    message: "Added book to books successfully!!!",
   });
 };
 
@@ -109,12 +80,10 @@ const updateBook = async (req, res, next) => {
   try {
     book = await Book.findById(bookId);
     if (!book) {
-      return next(
-        new HttpError("Could not find book for the provided id.", 404)
-      );
+      return next(new HttpError("Could not find book.", 404));
     }
   } catch (error) {
-    return next(new HttpError("Error while fetching Book", 500));
+    return next(new HttpError(error));
   }
 
   if (book.user._id.toString() !== req.userData.userId) {
@@ -123,7 +92,6 @@ const updateBook = async (req, res, next) => {
   }
 
   const data = req.body;
-
   for (const key in data) {
     book[key] = data[key];
   }
@@ -131,11 +99,10 @@ const updateBook = async (req, res, next) => {
   try {
     await book.save();
   } catch (error) {
-    console.error("Error while saving updated book:", error);
-    return next(new HttpError("Unable to update book", 500));
+    return next(new HttpError(error));
   }
 
-  res.status(200).json({ book, message: "Updated book successfully" });
+  res.status(200).json({ book, message: "Updated book successfully!!!" });
 };
 
 const deleteBook = async (req, res, next) => {
@@ -143,14 +110,13 @@ const deleteBook = async (req, res, next) => {
 
   let book;
   try {
-    book = await Book.findById(bookId).populate("user"); //populate method allows us access a user document that we need to overwrite or change due to change in related document.
-    //here when we delete book we also need to modify books array in user hence use populate. To use populate we need to connect 2 collections which we did using key word ref.
+    book = await Book.findById(bookId).populate("user");
   } catch (error) {
-    return next(new HttpError("Error while fetching Book", 500));
+    return next(new HttpError(error));
   }
 
   if (!book) {
-    return next(new HttpError("Could not find book for the provided id.", 404));
+    return next(new HttpError("Could not find book.", 404));
   }
 
   if (book.user.id.toString() !== req.userData.userId) {
@@ -169,11 +135,33 @@ const deleteBook = async (req, res, next) => {
     await book.user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    console.error("Error while saving deleting book:", error);
-    return next(new HttpError("Unable to delete book", 500));
+    return next(new HttpError(error));
   }
 
-  res.status(200).json({ book, message: "Deleted book successfully" });
+  res.status(200).json({ book, message: "Deleted book successfully!!!" });
+};
+
+//not used in frontend app
+const getBookById = async (req, res, next) => {
+  const bookId = req.params.pid;
+
+  let book;
+  try {
+    book = await Book.findById(bookId);
+  } catch (error) {
+    return next(new HttpError("Error while fetching Book", 500));
+  }
+  res.json({ book });
+};
+
+const getAllBooks = async (req, res, next) => {
+  let books;
+  try {
+    books = await Book.find();
+  } catch (error) {
+    return next(new HttpError("Error while fetching Books", 402));
+  }
+  res.json({ books });
 };
 
 exports.getBookById = getBookById;

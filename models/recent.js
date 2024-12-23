@@ -12,5 +12,5 @@ const recentSchema = new Schema({
   user: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
-recentSchema.plugin(mongooseValidator); // mongoose-unique-validator -> to validate unique items in object (we use unique key word)
+recentSchema.plugin(mongooseValidator);
 module.exports = mongoose.model("Recent", recentSchema);

@@ -126,7 +126,7 @@ const login = async (req, res, next) => {
   }
 
   let token;
-  const desiredDuration = 1; // in hours
+  const desiredDuration = 1;
   const desiredDurationInMinutes = desiredDuration * 60;
   const istNow = moment.tz("Asia/Kolkata");
   const utcNow = moment.utc();
