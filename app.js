@@ -24,6 +24,8 @@ app.use(
   })
 );
 
+console.log("CORS allowed origin:", process.env.HOST);
+
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
 
