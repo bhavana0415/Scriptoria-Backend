@@ -18,21 +18,14 @@ const app = express();
 app.use(
   cors({
     origin: [host, localhost],
+    methods: "GET,POST,PATCH,DELETE",
+    allowedHeaders:
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
   })
 );
-// app.use(bodyParser.json());
+
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
-
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
-  next();
-});
 
 app.use("/api/favourites", favouritesRoutes);
 app.use("/api/recents", recentsRoutes);
@@ -55,10 +48,12 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(dbConnection)
   .then(() => {
-    app.listen(port);
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+    });
   })
   .catch((err) => {
-    console.log("error connecting to mongo");
+    console.log("Error connecting to MongoDB:", err);
   });
 
 module.exports = app;
