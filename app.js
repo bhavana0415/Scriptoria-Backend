@@ -1,9 +1,7 @@
 const express = require("express");
 require("dotenv").config();
-const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const cors = require("cors");
-
 const favouritesRoutes = require("./routes/favourites-routes");
 const recentsRoutes = require("./routes/recents-routes");
 const booksRoutes = require("./routes/books-routes");
@@ -14,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://scriptoria-mern.netlify.app",
+    origin: process.env.HOST,
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: [
       "Origin",
@@ -91,7 +89,7 @@ app.use((error, req, res, next) => {
 //   });
 
 mongoose
-  .connect(dbConnection)
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("Connected to MongoDB");
   })
