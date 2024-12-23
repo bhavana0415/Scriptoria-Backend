@@ -27,6 +27,37 @@ app.use(
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
 
+app.get("/", (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Welcome to Scriptoria Backend</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+          }
+          h1 {
+            color: #333;
+          }
+          p {
+            color: #555;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Welcome to the Scriptoria Backend</h1>
+        <p>Your backend is running successfully!</p>
+        <p>Use API endpoints like <code>/api/users/signup</code> to interact with the backend.</p>
+      </body>
+    </html>
+  `);
+});
+
 app.use("/api/favourites", favouritesRoutes);
 app.use("/api/recents", recentsRoutes);
 app.use("/api/books", booksRoutes);
