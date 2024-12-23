@@ -15,10 +15,11 @@ const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
 
 const app = express();
-app.use(cors({ origin:  }));
-app.use(cors({
-  origin: [host, localhost],
-}));
+app.use(
+  cors({
+    origin: [host, localhost],
+  })
+);
 // app.use(bodyParser.json());
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
