@@ -55,6 +55,7 @@ app.get("/", (req, res) => {
         <h1>Welcome to the Scriptoria Backend</h1>
         <p>Your backend is running successfully!</p>
         <p>Use API endpoints like <code>/api/users/signup</code> to interact with the backend.</p>
+        <p>${process.env.HOST}</p>
       </body>
     </html>
   `);
