@@ -12,5 +12,5 @@ const favouriteSchema = new Schema({
   user: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
-favouriteSchema.plugin(mongooseValidator); // mongoose-unique-validator -> to validate unique items in object (we use unique key word)
+favouriteSchema.plugin(mongooseValidator);
 module.exports = mongoose.model("Favourite", favouriteSchema);

@@ -4,28 +4,7 @@ const Recent = require("../models/recent");
 const User = require("../models/user");
 const { default: mongoose } = require("mongoose");
 
-const getRecentById = async (req, res, next) => {
-  const bookId = req.params.pid;
-
-  let book;
-  try {
-    book = await Recent.findById(bookId);
-  } catch (error) {
-    return next(new HttpError("Error while fetching Recent", 500));
-  }
-  res.json({ book });
-};
-
-const getAllRecents = async (req, res, next) => {
-  let books;
-  try {
-    books = await Recent.find();
-  } catch (error) {
-    return next(new HttpError("Error while fetching Favourites", 402));
-  }
-  res.json({ books });
-};
-
+//used in frontend app
 const getRecentsByUserID = async (req, res, next) => {
   const userId = req.params.uid;
 
@@ -33,16 +12,12 @@ const getRecentsByUserID = async (req, res, next) => {
   try {
     userRecents = await User.findById(userId).populate("recents").exec();
   } catch (err) {
-    const error = new HttpError(
-      "Fetching recents failed, please try again later",
-      500
-    );
-    return next(error);
+    return next(new HttpError(err));
   }
 
   if (!userRecents) {
     return next(
-      new HttpError("Could not find books for the provided user id.", 404)
+      new HttpError("Could not find recent books for the user.", 404)
     );
   }
 
@@ -67,11 +42,10 @@ const createRecent = async (req, res, next) => {
     existingUser = await User.findById(user);
     console.log("Fetched User:", existingUser);
     if (!existingUser) {
-      return next(new HttpError("User not found", 404));
+      return next(new HttpError("User not found.", 404));
     }
   } catch (error) {
-    console.error("Error while fetching user:", error);
-    return next(new HttpError("Error while fetching user", 500));
+    return next(new HttpError(error));
   }
 
   const createdRecent = new Recent({
@@ -92,16 +66,52 @@ const createRecent = async (req, res, next) => {
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    console.error("Error while saving book:", error);
-    return next(new HttpError("Unable to add book to Favourites", 500));
+    return next(new HttpError(error));
   }
 
   res.status(201).json({
     book: createdRecent,
-    message: "Added book to Favourites",
+    message: "Added book to Recent books successfully!!!",
   });
 };
 
+const deleteRecent = async (req, res, next) => {
+  const bookId = req.params.pid;
+
+  let book;
+  try {
+    book = await Recent.findById(bookId).populate("user");
+  } catch (error) {
+    return next(new HttpError(error));
+  }
+
+  if (!book) {
+    return next(new HttpError("Could not find book.", 404));
+  }
+
+  if (book.user.id.toString() !== req.userData.userId) {
+    const error = new HttpError(
+      "You are not allowed to remove this book from recent books.",
+      401
+    );
+    return next(error);
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await book.deleteOne({ session: sess });
+    book.user.recents.pull(book);
+    await book.user.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (error) {
+    return next(new HttpError(error));
+  }
+
+  res.status(200).json({ book, message: "Deleted book successfully" });
+};
+
+//not used in frontend app
 const updateRecent = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -139,42 +149,26 @@ const updateRecent = async (req, res, next) => {
   res.status(200).json({ book, message: "Updated book successfully" });
 };
 
-const deleteRecent = async (req, res, next) => {
+const getRecentById = async (req, res, next) => {
   const bookId = req.params.pid;
 
   let book;
   try {
-    book = await Recent.findById(bookId).populate("user"); //populate method allows us access a user document that we need to overwrite or change due to change in related document.
-    //here when we delete book we also need to modify books array in user hence use populate. To use populate we need to connect 2 collections which we did using key word ref.
+    book = await Recent.findById(bookId);
   } catch (error) {
     return next(new HttpError("Error while fetching Recent", 500));
   }
+  res.json({ book });
+};
 
-  if (!book) {
-    return next(new HttpError("Could not find book for the provided id.", 404));
-  }
-
-  if (book.user.id.toString() !== req.userData.userId) {
-    const error = new HttpError(
-      "You are not allowed to delete this book.",
-      401
-    );
-    return next(error);
-  }
-
+const getAllRecents = async (req, res, next) => {
+  let books;
   try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await book.deleteOne({ session: sess });
-    book.user.recents.pull(book);
-    await book.user.save({ session: sess });
-    await sess.commitTransaction();
+    books = await Recent.find();
   } catch (error) {
-    console.error("Error while saving deleting book:", error);
-    return next(new HttpError("Unable to delete book", 500));
+    return next(new HttpError("Error while fetching Favourites", 402));
   }
-
-  res.status(200).json({ book, message: "Deleted book successfully" });
+  res.json({ books });
 };
 
 exports.getRecentById = getRecentById;
