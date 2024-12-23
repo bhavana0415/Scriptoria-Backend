@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.HOST,
+    origin: process.env.HOST.trim(),
     methods: ["GET", "POST", "PATCH", "DELETE"],
     allowedHeaders: [
       "Origin",
