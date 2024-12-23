@@ -1,8 +1,5 @@
 const express = require("express");
-// const bodyParser = require("body-parser");
 require("dotenv").config();
-const host = process.env.HOST;
-const localhost = process.env.LOCALHOST;
 const dbConnection = process.env.MONGO_URI;
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -17,17 +14,17 @@ const app = express();
 
 app.use(
   cors({
-    origin: [host, localhost],
-    methods: "GET,POST,PATCH,DELETE",
-    allowedHeaders:
-      "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+    origin: "https://scriptoria-mern.netlify.app",
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: [
+      "Origin",
+      "X-Requested-With",
+      "Content-Type",
+      "Accept",
+      "Authorization",
+    ],
   })
 );
-// app.use(
-//   cors({
-//     origin: "*",
-//   })
-// );
 
 app.use(express.json({ limit: "5000mb" }));
 app.use(express.urlencoded({ limit: "5000mb", extended: true }));
@@ -86,7 +83,7 @@ app.use((error, req, res, next) => {
 //   .connect(dbConnection)
 //   .then(() => {
 //     app.listen(5000, () => {
-//       console.log(`Server is running on 5000 ${port}`);
+//       console.log(`Server is running on 5000 ${5000}`);
 //     });
 //   })
 //   .catch((err) => {
