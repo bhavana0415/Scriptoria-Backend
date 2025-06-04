@@ -3,7 +3,7 @@ const mongooseValidator = require("mongoose-unique-validator");
 const Schema = mongoose.Schema;
 
 const favouriteSchema = new Schema({
-  book_id: { type: String, required: true, unique: true },
+  book_id: { type: String, required: true },
   title: { type: String, required: true },
   subtitle: { type: String, required: false },
   authors: { type: String, required: true },
