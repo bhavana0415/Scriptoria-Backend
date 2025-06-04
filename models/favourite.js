@@ -12,5 +12,8 @@ const favouriteSchema = new Schema({
   user: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
+
+favouriteSchema.index({ book_id: 1, user: 1 }, { unique: true });
+
 favouriteSchema.plugin(mongooseValidator);
 module.exports = mongoose.model("Favourite", favouriteSchema);
