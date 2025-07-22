@@ -13,11 +13,11 @@ const getBooksByUserID = async (req, res, next) => {
   try {
     userBooks = await User.findById(userId).populate("books").exec();
   } catch (err) {
-    return next(new HttpError(err));
+    return next(new HttpError("Error occurred while fetching your books:", err));
   }
 
   if (!userBooks) {
-    return next(new HttpError("Could not find books for the given user.", 404));
+    return next(new HttpError("Could not find your books.", 404));
   }
 
   res.json({
@@ -29,7 +29,7 @@ const createBook = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join("; "), 422));
   }
 
   const { data, user } = req.body;
@@ -37,12 +37,12 @@ const createBook = async (req, res, next) => {
   let existingUser;
   try {
     existingUser = await User.findById(user);
-    console.log("Fetched User:", existingUser);
-    if (!existingUser) {
-      return next(new HttpError("User not found.", 404));
-    }
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while saving your book:", error));
+  }
+
+  if (!existingUser) {
+    return next(new HttpError("User not found.", 404));
   }
 
   const createdBook = new Book({
@@ -58,12 +58,12 @@ const createBook = async (req, res, next) => {
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while saving your book:", error));
   }
 
   res.status(201).json({
     book: createdBook,
-    message: "Added book to books successfully!!!",
+    message: "Saved your book successfully!",
   });
 };
 
@@ -71,7 +71,7 @@ const updateBook = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join("; "), 422));
   }
 
   const bookId = req.params.pid;
@@ -79,11 +79,12 @@ const updateBook = async (req, res, next) => {
   let book;
   try {
     book = await Book.findById(bookId);
-    if (!book) {
-      return next(new HttpError("Could not find book.", 404));
-    }
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while updating your book:", error));
+  }
+
+  if (!book) {
+    return next(new HttpError("Could not find book.", 404));
   }
 
   if (book.user._id.toString() !== req.userData.userId) {
@@ -99,10 +100,10 @@ const updateBook = async (req, res, next) => {
   try {
     await book.save();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while updating your book:", error));
   }
 
-  res.status(200).json({ book, message: "Updated book successfully!!!" });
+  res.status(200).json({ book, message: "Updated your book successfully!" });
 };
 
 const deleteBook = async (req, res, next) => {
@@ -112,7 +113,7 @@ const deleteBook = async (req, res, next) => {
   try {
     book = await Book.findById(bookId).populate("user");
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while deleting your book:", error));
   }
 
   if (!book) {
@@ -135,10 +136,10 @@ const deleteBook = async (req, res, next) => {
     await book.user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while deleting your book:", error));
   }
 
-  res.status(200).json({ book, message: "Deleted book successfully!!!" });
+  res.status(200).json({ book, message: "Deleted your book successfully!" });
 };
 
 //not used in frontend app

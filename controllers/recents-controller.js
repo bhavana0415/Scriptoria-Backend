@@ -12,7 +12,7 @@ const getRecentsByUserID = async (req, res, next) => {
   try {
     userRecents = await User.findById(userId).populate("recents").exec();
   } catch (err) {
-    return next(new HttpError(err));
+    return next(new HttpError("Error occurred while fetching recently viewed books:", err));
   }
 
   if (!userRecents) {
@@ -32,7 +32,7 @@ const createRecent = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join("; "), 422));
   }
 
   const { book_id, title, subtitle, authors, image, url, user } = req.body;
@@ -40,12 +40,12 @@ const createRecent = async (req, res, next) => {
   let existingUser;
   try {
     existingUser = await User.findById(user);
-    console.log("Fetched User:", existingUser);
-    if (!existingUser) {
-      return next(new HttpError("User not found.", 404));
-    }
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while adding book to recents:", error));
+  }
+
+  if (!existingUser) {
+    return next(new HttpError("User not found.", 404));
   }
 
   const createdRecent = new Recent({
@@ -66,12 +66,12 @@ const createRecent = async (req, res, next) => {
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while adding book to recents:", error));
   }
 
   res.status(201).json({
     book: createdRecent,
-    message: "Added book to Recent books successfully!!!",
+    message: "Added book to Recents successfully!",
   });
 };
 
@@ -82,7 +82,7 @@ const deleteRecent = async (req, res, next) => {
   try {
     book = await Recent.findById(bookId).populate("user");
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while removing book from recents:", error));
   }
 
   if (!book) {
@@ -91,7 +91,7 @@ const deleteRecent = async (req, res, next) => {
 
   if (book.user.id.toString() !== req.userData.userId) {
     const error = new HttpError(
-      "You are not allowed to remove this book from recent books.",
+      "You are not allowed to remove this book from recents.",
       401
     );
     return next(error);
@@ -105,10 +105,10 @@ const deleteRecent = async (req, res, next) => {
     await book.user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while removing book from recents:", error));
   }
 
-  res.status(200).json({ book, message: "Deleted book successfully" });
+  res.status(200).json({ book, message: "Removed book from recents successfully!" });
 };
 
 //not used in frontend app
@@ -116,7 +116,7 @@ const updateRecent = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join("; "), 422));
   }
 
   const bookId = req.params.pid;
