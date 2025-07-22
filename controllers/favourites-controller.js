@@ -14,12 +14,12 @@ const getFavouritesByUserID = async (req, res, next) => {
   try {
     userFavourites = await User.findById(userId).populate("favourites").exec();
   } catch (err) {
-    return next(new HttpError(err));
+    return next(new HttpError("Error occurred while fetching favourites:", err));
   }
 
   if (!userFavourites) {
     return next(
-      new HttpError("Could not find favourite book for the user.", 404)
+      new HttpError("Could not find favourites.", 404)
     );
   }
 
@@ -32,7 +32,7 @@ const createFavourite = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join(": "), 422));
   }
 
   const { book_id, title, subtitle, authors, image, url, user } = req.body;
@@ -40,12 +40,12 @@ const createFavourite = async (req, res, next) => {
   let existingUser;
   try {
     existingUser = await User.findById(user);
-    console.log("Fetched User:", existingUser);
-    if (!existingUser) {
-      return next(new HttpError("User not found", 404));
-    }
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while adding to favourites:", error));
+  }
+
+  if (!existingUser) {
+    return next(new HttpError("User not found", 404));
   }
 
   const createdFavourite = new Favourite({
@@ -66,12 +66,12 @@ const createFavourite = async (req, res, next) => {
     await existingUser.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while adding to favourites:", error));
   }
 
   res.status(201).json({
     book: createdFavourite,
-    message: "Added book to Favourites successfully",
+    message: "Added book to favourites successfully!",
   });
 };
 
@@ -82,7 +82,7 @@ const deleteFavourite = async (req, res, next) => {
   try {
     book = await Favourite.findById(bookId).populate("user");
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while removing from favourites:", error));
   }
 
   if (!book) {
@@ -91,7 +91,7 @@ const deleteFavourite = async (req, res, next) => {
 
   if (book.user.id.toString() !== req.userData.userId) {
     const error = new HttpError(
-      "You are not allowed to delete this book.",
+      "You are not allowed to remove this book from favourites.",
       401
     );
     return next(error);
@@ -105,10 +105,10 @@ const deleteFavourite = async (req, res, next) => {
     await book.user.save({ session: sess });
     await sess.commitTransaction();
   } catch (error) {
-    return next(new HttpError(error));
+    return next(new HttpError("Error occurred while removing from favourites:", error));
   }
 
-  res.status(200).json({ book, message: "Deleted book successfully!!!" });
+  res.status(200).json({ book, message: "Removed book from favourites successfully!" });
 };
 
 //not used in frontend app
@@ -117,7 +117,7 @@ const updateFavourite = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
-    return next(new HttpError(errorMessages.join(", "), 422));
+    return next(new HttpError(errorMessages.join("; "), 422));
   }
 
   const bookId = req.params.pid;
